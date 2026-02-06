@@ -1,0 +1,458 @@
+GreatExplosionMurderGodDynamight
+nunu4gang
+Invisible
+
+GreatExplosionMurderGodDynamight — 2/4/2026 12:28 AM
+โอเชจ้า
+GreatExplosionMurderGodDynamight — 2/4/2026 9:16 PM
+def get_histogram(frame_color, blob):
+    hist = np.zeros((8, 8, 8), dtype=float)
+    pixels = blob["pixels"]
+    for (x, y) in pixels:
+        r = frame_color[y, x, 0]
+        g = frame_color[y, x, 1]
+
+message.txt
+3 KB
+ʃƲɴȘɴλκϓ — 2/4/2026 9:39 PM
+⁨⁨⁨⁨⁨⁨
+def getHistogram(blob, frame):
+    histogram = np.zeros((8, 8, 8), dtype=float)
+
+    for (x, y) in blob["pixels"]:
+        r, g, b = frame[y, x]
+        histogram[r//32, g//32, b//32] += 1
+
+    return histogram / histogram.sum()
+
+def histogramDistance(hist1, hist2):
+    return -np.log(np.sum(np.sqrt(hist1 * hist2)))
+
+def CenterOfMass(blob):
+    pixels = np.array(blob["pixels"])
+    cx, cy = pixels.mean(axis=0)
+    
+    return cx, cy
+⁩⁩⁩⁩⁩⁩ 
+อันนี้ของเค้า แต่ไม่มี orientation กะคิด cost
+GreatExplosionMurderGodDynamight — 2/4/2026 9:40 PM
+ʃƲɴȘɴλκϓ — 2/4/2026 9:41 PM
+555555555
+GreatExplosionMurderGodDynamight — 2/4/2026 9:42 PM
+555555555
+ʃƲɴȘɴλκϓ — 2/4/2026 9:45 PM
+ย่อให้สั้นลงอีกละ น่าจะ compact อยู่
+GreatExplosionMurderGodDynamight — 2/4/2026 9:49 PM
+k ja
+GreatExplosionMurderGodDynamight — 2/4/2026 10:09 PM
+พนเช้าไปมั้ย55555555
+ʃƲɴȘɴλκϓ — 2/4/2026 10:09 PM
+ดูจากทรงละไม่น่า
+55555555555
+GreatExplosionMurderGodDynamight — 2/4/2026 10:09 PM
+โอเค
+ไม่ไปด้วย
+ʃƲɴȘɴλκϓ — 2/4/2026 10:10 PM
+555555
+โดดวิชานี้ยับๆ
+GreatExplosionMurderGodDynamight — 2/4/2026 10:10 PM
+55555555555
+อาทิตนี้เราต้องปั่นงานไง
+อิอิ
+ʃƲɴȘɴλκϓ — 2/4/2026 10:10 PM
+5555555
+ก้จิงแหละ
+GreatExplosionMurderGodDynamight — Yesterday at 1:09 AM
+from controller import Robot, Display
+import numpy as np
+import math
+
+def downScale(height, width, img_array):
+    small = img_array[::int(img_array.shape[0] // height), ::int(img_array.shape[1] // width)]
+
+message.txt
+10 KB
+ʃƲɴȘɴλκϓ — Yesterday at 3:17 PM
+def checkGoal(blobs, frame):
+    candidate = None
+    most_white = 0
+
+    for blob in blobs:
+        pixels = blob["pixels"]
+
+        colors = np.array([frame[y, x] for (x, y) in pixels])
+        r, g, b = colors.mean(axis=0)
+
+        color_value = min(r, g, b)
+
+        if color_value > 200:
+            if color_value > most_white:
+                most_white = color_value
+                candidate = blob
+
+    if candidate is not None:
+        cx, cy = centerOfMass(candidate)
+        print("GOAL in frame!")
+        print(f"Center of mass: ({cx:.2f}, {cy:.2f})")
+    else:
+        print(f"No goal detected in frame")
+ 
+        goal_blob = checkGoal(curr_frame_data['blobs'], downScale(30, 30, raw_grb))
+GreatExplosionMurderGodDynamight — Yesterday at 9:56 PM
+from controller import Robot, Display
+import numpy as np
+import math
+
+def downScale(height, width, img_array):
+    small = img_array[::int(img_array.shape[0] // height), ::int(img_array.shape[1] // width)]
+
+message.txt
+11 KB
+GreatExplosionMurderGodDynamight — Yesterday at 11:52 PM
+Attachment file type: unknown
+Project1.wbt
+3.67 KB
+ʃƲɴȘɴλκϓ — Yesterday at 11:53 PM
+ʃƲɴȘɴλκϓ — 2:23 AM
+Attachment file type: acrobat
+CV Architecture.pdf
+662.46 KB
+GreatExplosionMurderGodDynamight — 5:42 PM
+Attachment file type: acrobat
+Untitled Diagram.drawio (8).pdf
+65.21 KB
+ʃƲɴȘɴλκϓ — 7:16 PM
+🙏
+﻿
+ʃƲɴȘɴλκϓ
+funsnaky
+ 
+from controller import Robot, Display
+import numpy as np
+import math
+
+def downScale(height, width, img_array):
+    small = img_array[::int(img_array.shape[0] // height), ::int(img_array.shape[1] // width)]
+    return small
+
+def grayscale(array):
+    weights = np.array([0.299, 0.587, 0.114])
+    gray_im = np.dot(array[..., :3], weights)
+    return gray_im
+
+def convolution(array, kernel):
+    kernel = np.array(kernel, dtype=float)
+    if kernel.sum() != 0:
+        kernel /= kernel.sum()
+
+    window = kernel.shape[0]
+    pad = window // 2
+    padded = np.pad(array, ((pad, pad), (pad, pad)), mode='constant')
+    convo_im = np.zeros_like(array, dtype=float)
+    row, col = array.shape
+
+    for i in range(row):
+        for j in range(col):
+            region = padded[i:i+window, j:j+window]
+            convo_im[i, j] = np.sum(region * kernel)
+
+    return convo_im
+
+def gaussianBlur(array):
+    blur_kernel = [
+        [1, 4, 6, 4, 1],
+        [4, 16, 24, 16, 4],
+        [6, 24, 36, 24, 6],
+        [4, 16, 24, 16, 4],
+        [1, 4, 6, 4, 1]
+    ]
+    return convolution(array, blur_kernel)
+
+
+def edgeDetect(array, threshold):
+    vertical_kernel = [
+    [1, 0, -1],
+    [2, 0, -2],
+    [1, 0, -1]
+    ]
+    horizontal_kernel = [
+    [1, 2, 1],
+    [0, 0, 0],
+    [-1, -2, -1]
+    ]
+
+    gx = convolution(array, horizontal_kernel)
+    gy = convolution(array, vertical_kernel)
+    mag = np.sqrt(gx**2 + gy**2)
+    edge = (mag >= threshold).astype(np.uint8) * 255
+
+    return edge
+
+def growBlob(x, y, edge_map, visited):
+    h, w = edge_map.shape
+    stack = [(x, y)]
+    pixels = []
+
+    while stack:
+        cx, cy = stack.pop()
+        if cx < 0 or cx >= w or cy < 0 or cy >= h: 
+            continue
+        if visited[cy, cx]: 
+            continue
+        if edge_map[cy, cx] != 0:
+            continue
+
+        visited[cy, cx] = True
+        pixels.append((cx, cy))
+        stack.extend([(cx-1, cy), (cx+1, cy), (cx, cy-1), (cx, cy+1)])
+
+    return pixels
+
+def blobDetect(edge_map):
+    h, w = edge_map.shape
+    visited = np.zeros((h, w), dtype=bool)
+    blobs = []
+
+    for y in range(h):
+        for x in range(w):
+            if edge_map[y, x] == 0 and not visited[y, x]:
+                pixels = growBlob(x, y, edge_map, visited)
+                if pixels:
+                    blobs.append({"pixels": pixels})
+    return blobs
+
+def visualizeBlobs(display, blobs, width, height, seed=42):
+    if display is None:
+        return
+
+    display.setColor(0x000000)
+    display.fillRectangle(0, 0, width, height)
+
+    rng = np.random.default_rng(seed)
+
+    for blob in blobs:
+        # random R, G, B 
+        c = rng.integers(50, 256, size=3, dtype=int)
+
+        # RGB to Hex Code (for Webot)
+        color_hex = int((c[0] << 16) | (c[1] << 8) | c[2])
+
+        display.setColor(color_hex)
+
+        # draw
+        for (x, y) in blob["pixels"]:
+            if 0 <= x < 30 and 0 <= y < 30: # edge
+                display.drawPixel(x, y)
+
+
+def motionDetect(blobs, frame1_blur, frame2_blur, threshold):
+    diff = np.abs(frame1_blur.astype(int) - frame2_blur.astype(int))
+    motion_mask = diff > threshold
+
+    moving_blobs = []
+    for blob in blobs:
+        pixels = blob["pixels"]
+        total = len(pixels)
+        if total == 0:
+            continue
+
+        motion_pixels = sum(1 for (cx, cy) in pixels if motion_mask[cy, cx])
+
+        if (motion_pixels / total) > 0.1:
+            moving_blobs.append(blob)
+
+    return moving_blobs
+
+def get_histogram(frame, blob):
+    histogram = np.zeros((8, 8, 8), dtype=float)
+
+    for (x, y) in blob["pixels"]:
+        r, g, b = frame[y, x]
+        histogram[r//32, g//32, b//32] += 1
+
+    return histogram / histogram.sum()
+
+
+def get_gradients(array):
+    vertical_kernel = [
+    [1, 0, -1], 
+    [2, 0, -2], 
+    [1, 0, -1]]
+    horizontal_kernel = [
+    [1, 2, 1], 
+    [0, 0, 0], 
+    [-1, -2, -1]]
+
+    gx = convolution(array, horizontal_kernel)
+    gy = convolution(array, vertical_kernel)
+    return gx, gy
+
+def get_gradient_histogram(gx, gy, blob):
+    # HOG: Histogram of Oriented Gradients (Orientation)
+    hist = np.zeros(8, dtype=float)
+    pixels = blob["pixels"]
+
+    for (x, y) in pixels:
+        val_x = gx[y, x]
+        val_y = gy[y, x]
+        magnitude = math.sqrt(val_x**2 + val_y**2)
+        if magnitude == 0: continue
+
+        angle = math.atan2(val_y, val_x)
+        degree = math.degrees(angle)
+        if degree < 0: degree += 360
+
+        bin_idx = int(degree // 45) % 8
+        hist[bin_idx] += magnitude 
+
+    total = np.sum(hist)
+    if total > 0: hist /= total
+    return hist
+
+def get_center_of_mass(blob):
+    pixels = np.array(blob["pixels"])
+    cx, cy = pixels.mean(axis=0)
+    return cx, cy
+
+def histogramDistance(hist1, hist2):
+    return -np.log(np.sum(np.sqrt(hist1 * hist2))+ 1e-10)
+
+def match_blobs(blobs1, blobs2, k1=1.0, k2=0.05, k3=0.5):
+    matches = []
+    for b1 in blobs1:
+        best_match = None
+        min_cost = float('inf')
+        cm1 = get_center_of_mass(b1)
+
+        for b2 in blobs2:
+            # Color Distance
+            d_color = histogramDistance(b1['hist'], b2['hist'])
+
+            # Position Distance
+            cm2 = get_center_of_mass(b2)
+            d_pos = math.sqrt((cm1[0]-cm2[0])**2 + (cm1[1]-cm2[1])**2)
+
+            # Orientation Distance (HOG)
+            d_shape = histogramDistance(b1['hog'], b2['hog'])
+
+            cost = (k1 * d_color) + (k2 * d_pos) + (k3 * d_shape)
+
+            if cost < min_cost:
+                min_cost = cost
+                best_match = b2
+
+        if best_match and min_cost < 3.0:
+            matches.append((b1, best_match, min_cost))
+
+    return matches
+
+def get_image_from_camera(camera):
+    buffer = camera.getImage()
+    img = np.frombuffer(buffer, np.uint8).reshape((camera.getHeight(), camera.getWidth(), 4))
+    return img[:, :, :3]
+
+def get_frame(raw_rgb):
+    current_frame = downScale(30, 30, raw_rgb)
+    gray = grayscale(current_frame)
+    blur = gaussianBlur(gray)
+    gx, gy = get_gradients(blur)
+    
+    magnitude = np.sqrt(gx**2 + gy**2)
+    edges = (magnitude >= 40).astype(np.uint8) * 255
+    blobs = blobDetect(edges)
+
+    for b in blobs:
+        b['hist'] = get_histogram(current_frame, b)
+        b['hog']  = get_gradient_histogram(gx, gy, b)
+
+    return {'blur': blur, 'blobs': blobs, 'gx': gx, 'gy': gy}
+
+def check_if_dynamic(data1, data2):
+    moving_blobs = motionDetect(data1['blobs'], data1['blur'], data2['blur'], threshold=12)
+
+    matches = match_blobs(moving_blobs, data2['blobs'])
+    
+    for b1, b2, cost in matches:
+        cm1 = get_center_of_mass(b1)
+        cm2 = get_center_of_mass(b2)
+        
+        dist = math.sqrt((cm1[0]-cm2[0])**2 + (cm1[1]-cm2[1])**2)
+        
+        if dist > 0.2: 
+            return True
+            
+    return False
+
+def setup_robot():
+    robot = Robot()
+    timestep = int(robot.getBasicTimeStep())
+
+    # motor
+    left_motor = robot.getDevice('left wheel motor')
+    right_motor = robot.getDevice('right wheel motor')
+    left_motor.setPosition(float('inf'))
+    right_motor.setPosition(float('inf'))
+
+    # speed
+    left_motor.setVelocity(0)
+    right_motor.setVelocity(0)
+
+    # camera
+    camera = robot.getDevice('camera')
+    camera.enable(timestep)
+
+    # distance sensor
+    ps0 = robot.getDevice('ps0')
+    ps0.enable(timestep)
+    ps7 = robot.getDevice('ps7')
+    ps7.enable(timestep)
+
+    # display
+    display = robot.getDevice('display')
+    
+    return robot, timestep, left_motor, right_motor, camera, ps0, ps7, display
+
+def run_robot():
+    robot, timestep, left_motor, right_motor, camera, ps0, ps7, display = setup_robot()
+    camera_w, camera_h = camera.getWidth(), camera.getHeight()
+    
+    left_motor.setVelocity(0)
+    right_motor.setVelocity(0)
+    
+    prev_frame_data = None
+    current_state = "EMPTY"
+    dynamic_grace_counter = 0
+
+    print("SET UP READY :)")
+
+    while robot.step(timestep) != -1:
+        raw_rgb = get_image_from_camera(camera)
+        curr_frame_data = get_frame(raw_rgb)
+        visualizeBlobs(display, curr_frame_data['blobs'], camera_w, camera_h)
+
+        if prev_frame_data is not None:
+            is_moving = check_if_dynamic(prev_frame_data, curr_frame_data)
+
+            if is_moving:
+                new_state = "DYNAMIC"
+                dynamic_grace_counter = 10 # wait 10 frame til stop moving
+            else:
+                if dynamic_grace_counter > 0:
+                    new_state = "DYNAMIC"
+                    dynamic_grace_counter -= 1
+                else:
+                    new_state = "STATIC"
+            
+            if new_state == "DYNAMIC":
+                print(">>> DYNAMIC OBJECT DETECTED! *0* <<<")
+            
+            elif new_state == "STATIC":
+                if current_state != "STATIC":
+                    print(">>> STATIC OBJECT FOUND -_- <<<")
+
+            current_state = new_state
+
+        prev_frame_data = curr_frame_data
+run_robot()
+message.txt
+10 KB
