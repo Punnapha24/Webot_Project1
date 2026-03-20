@@ -1,0 +1,141 @@
+from controller import Robot, Keyboard
+import numpy as np
+import math
+
+class SLAM:
+    def __init__(self):
+        self.robot = Robot()
+        self.TIME_STEP = int(self.robot.getBasicTimeStep())
+
+        # Motors
+        self.left_motor = self.robot.getDevice('left wheel motor')
+        self.right_motor = self.robot.getDevice('right wheel motor')
+        self.left_motor.setPosition(float('inf'))
+        self.right_motor.setPosition(float('inf'))
+        self.left_motor.setVelocity(0.0)
+        self.right_motor.setVelocity(0.0)
+
+        # Encoders
+        self.left_encoder = self.robot.getDevice('left wheel sensor')
+        self.right_encoder = self.robot.getDevice('right wheel sensor')
+        self.left_encoder.enable(self.TIME_STEP)
+        self.right_encoder.enable(self.TIME_STEP)
+        
+        # Lidar
+        self.lidar = self.robot.getDevice("lidar")
+        self.lidar.enable(self.TIME_STEP)
+        # self.lidar.enablePointCloud()
+        self.fov = self.lidar.getFov()
+        self.resolution = self.lidar.getHorizontalResolution()
+        
+        # Keyboard
+        self.keyboard = self.robot.getKeyboard()
+        self.keyboard.enable(self.TIME_STEP)
+        
+        # Display
+        self.display = self.robot.getDevice("display")
+        self.DW, self.DH = self.display.getWidth(), self.display.getHeight()
+        self.OFFSET_X, self.OFFSET_Y = self.DW//2, self.DH//2
+        
+        self.display.setColor(0x000000)
+        self.display.fillRectangle(0, 0, self.DW, self.DH)
+        
+        # Robot parameters
+        self.R = 0.02  # Wheel radius
+        self.L = 0.0569   # Full Axle length
+        self.cell_size = 0.01
+        self.min_R, self.max_R = 0.05, 0.5  # Lidar limits
+        self.angles = np.linspace(self.fov/2, -self.fov/2, self.resolution)  # Match lidar output (512 rays)
+        self.cos_A, self.sin_A = np.cos(self.angles), np.sin(self.angles)
+        
+        # Robot state (Initial)
+        self.x, self.y, self.theta = -0.4, -0.4, 0.0
+        self.map = np.zeros((self.DH, self.DW))
+        self.prev_l, self.prev_r = 0.0, 0.0
+    
+    def get_px(self, w_x, w_y):
+        # Pixel coordinates from world coordinates
+        gy = int(w_y / self.cell_size) + self.OFFSET_Y
+        gx = int(w_x / self.cell_size) + self.OFFSET_X
+        return gx, gy, self.DH - gy - 1
+    
+    def update_position(self):
+        # Forward Kinematics
+        curr_l = self.left_encoder.getValue()
+        curr_r = self.right_encoder.getValue()
+ 
+        dl = self.R * (curr_l - self.prev_l)
+        dr = self.R * (curr_r - self.prev_r)
+        
+        dc = (dr + dl) / 2.0
+        dt = (dr - dl) / self.L
+
+        self.x += dc * math.cos(self.theta + dt / 2.0)
+        self.y += dc * math.sin(self.theta + dt / 2.0)
+        self.theta += dt
+
+        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
+        
+        self.prev_l = curr_l
+        self.prev_r = curr_r
+        
+        print(self.x,self.y,self.theta)
+    
+    def keyboard_input(self):
+        key = self.keyboard.getKey()
+        ls, rs = 0.0, 0.0
+        
+        if key == self.keyboard.UP:
+            ls, rs = 4.0, 4.0
+        elif key == self.keyboard.DOWN:
+            ls, rs = -4.0, -4.0
+        elif key == self.keyboard.LEFT:
+            ls, rs = -1.0, 1.0
+        elif key == self.keyboard.RIGHT:
+            ls, rs = 1.0, -1.0
+        
+        self.left_motor.setVelocity(ls)
+        self.right_motor.setVelocity(rs)
+    
+    def update_map(self):
+        ranges = np.array(self.lidar.getRangeImage())
+
+        for i in range(len(ranges)):
+            r = ranges[i]
+            if r <= self.min_R or r >= self.max_R:
+                continue
+
+            angle = self.angles[i]
+            global_angle = self.theta + angle
+
+            wx = self.x + r * math.cos(global_angle)
+            wy = self.y + r * math.sin(global_angle)
+
+            gx, gy, dy = self.get_px(wx, wy)
+
+            if 0 <= gx < self.DW and 0 <= gy < self.DH:
+                if self.map[gy, gx] == 0:
+                    self.map[gy, gx] = 1
+                    self.display.setColor(0x808080)
+                    self.display.drawPixel(gx, dy)
+
+        # Draw robot position
+        gx_r, gy_r, dy_r = self.get_px(self.x, self.y)
+        if 0 <= gx_r < self.DW and 0 <= gy_r < self.DH:
+            self.display.setColor(0xFF0000)
+            self.display.drawPixel(gx_r, dy_r)
+     
+    def run(self):
+        print("EXPLORE")
+        self.robot.step(self.TIME_STEP)
+        self.prev_l = self.left_encoder.getValue()
+        self.prev_r = self.right_encoder.getValue()
+        
+        while self.robot.step(self.TIME_STEP) != -1:
+            self.keyboard_input()
+            self.update_position()
+            self.update_map()
+
+if __name__ == "__main__":
+    slam = SLAM()
+    slam.run()
